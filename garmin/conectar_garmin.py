@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Conecta tu cuenta de Garmin Connect (y tu reloj) usando python-garminconnect.
 
-- La contraseña se pide aquí en la Terminal con getpass (no se muestra ni se guarda).
+- Credenciales: se leen de las variables de entorno GARMIN_EMAIL y GARMIN_PASSWORD
+  (p. ej. configuradas en el entorno en la nube); si no existen, se piden en la
+  Terminal con getpass (la contraseña no se muestra ni se guarda).
 - Tras el primer inicio de sesión se guardan tokens en ~/.garminconnect,
   así que las siguientes veces no te volverá a pedir la contraseña.
 """
@@ -40,9 +42,11 @@ def iniciar_sesion() -> Garmin:
         except Exception:
             print("Los tokens guardados ya no sirven; hay que iniciar sesión de nuevo.")
 
-    # 2) Pedir credenciales en la Terminal.
-    email = input("Correo de tu cuenta Garmin Connect: ").strip()
-    password = getpass.getpass("Contraseña (no se mostrará al escribir): ")
+    # 2) Credenciales: variables de entorno (entorno en la nube) o Terminal.
+    email = os.getenv("GARMIN_EMAIL") or input("Correo de tu cuenta Garmin Connect: ").strip()
+    password = os.getenv("GARMIN_PASSWORD") or getpass.getpass(
+        "Contraseña (no se mostrará al escribir): "
+    )
 
     TOKENSTORE.mkdir(mode=0o700, parents=True, exist_ok=True)
     api = Garmin(email=email, password=password, prompt_mfa=pedir_codigo_mfa)
